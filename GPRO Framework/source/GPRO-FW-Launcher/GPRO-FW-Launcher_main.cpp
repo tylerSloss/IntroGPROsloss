@@ -4,12 +4,12 @@
 //declaration
 int foo(int bar);
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+
+using namespace std;
 
 int main()
 {
    int test = foo(9000); 
-   printf("\n %d \n", test);
-   system("pause");
+   cout << "\n %d \n" << test;
 }
