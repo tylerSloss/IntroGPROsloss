@@ -2,14 +2,16 @@
 //
 
 //declaration
-int foo(int bar);
+
 
 #include <iostream>
 
 using namespace std;
 
+int foo(int bar);
+
 int main()
 {
    int test = foo(9000); 
-   cout << "\n %d \n" << test;
+   cout << "\n" << test;
 }
