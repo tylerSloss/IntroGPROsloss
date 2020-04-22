@@ -21,9 +21,6 @@
     <ClCompile Include="..\..\..\source\GPRO-FW-Launcher\GPRO-FW-Launcher_main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\GPRO-FW-Launcher\Game\GPRO-FW-Battleship.c">
-      <Filter>Source Files\Games</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\GPRO-FW-Launcher\Game\GPRO-FW-Checkers.c">
       <Filter>Source Files\Games</Filter>
     </ClCompile>
@@ -31,6 +28,9 @@
       <Filter>Source Files\Games</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\GPRO-FW-Launcher\Game\GPRO-FW-TicTacToe.c">
+      <Filter>Source Files\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\GPRO-FW-Launcher\Game\GPRO-FW-Battleship.c">
       <Filter>Source Files\Games</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,7 @@
 
 #include <stdio.h>
-#include <string>
+//#include <string>
+#include <stdlib.h>
 
 
 //-----------------------------------------------------------------------------
@@ -15,12 +16,12 @@ enum gs_battleship_space_state
 	// invalid space state
 	gs_battleship_space_invalid = -1,
 
-	// states visible to both players
+	// bsStates visible to both players
 	gs_battleship_space_open,			// space is open and unguessed
 	gs_battleship_space_miss,			// space was guessed and missed
 	gs_battleship_space_hit,			// space was guessed and hit
 
-	// states hidden from opponent player
+	// bsStates hidden from opponent player
 	gs_battleship_space_patrol2,		// 2-unit patrol boat
 	gs_battleship_space_submarine3,		// 3-unit submarine
 	gs_battleship_space_destroyer3,		// 3-unit destroyer
@@ -28,7 +29,7 @@ enum gs_battleship_space_state
 	gs_battleship_space_carrier5,		// 5-unit carrier
 };
 
-const char states[8] = { 'O', 'm', 'H', 'P', 'S', 'D', 'B', 'C' };
+const char bsStates[8] = { 'O', 'm', 'H', 'P', 'S', 'D', 'B', 'C' };
 const int rowTotal = 10;
 const char yPositions[10] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' };
 const char directions[4] = { 'U', 'D', 'L', 'R' };
@@ -76,14 +77,23 @@ inline int gs_battleship_win(gs_battleship game)
 	int ships;
 	gs_battleship_index player, xpos, ypos, total;
 	for (player = 0; player < GS_BATTLESHIP_PLAYERS; ++player)
+	{
 		ships = 0;
-	for (xpos = 0; xpos < GS_BATTLESHIP_BOARD_WIDTH; ++xpos)
-		for (ypos = 0; ypos < GS_BATTLESHIP_BOARD_HEIGHT; ++ypos)
-			if (game[player][xpos][ypos] > 2)
-				ships++;
-	if (ships > 0)
-		winner = player + 1;
-	return winner;
+
+		for (xpos = 0; xpos < GS_BATTLESHIP_BOARD_WIDTH; ++xpos) {
+			for (ypos = 0; ypos < GS_BATTLESHIP_BOARD_HEIGHT; ++ypos) {
+				if (gs_checkers_getSpaceState(game,player,xpos,ypos) > 2) {
+					ships++;
+				}
+			}
+		}
+		if (ships < 1) {
+
+			winner = player + 1;
+		}
+	}
+		return winner;
+	
 }
 
 inline void gs_battleship_print_player(gs_battleship game, int nPlayer) //prints for the player's view
@@ -91,14 +101,14 @@ inline void gs_battleship_print_player(gs_battleship game, int nPlayer) //prints
 	gs_battleship_index player, xpos, ypos, total;
 	player = nPlayer;
 	printf("Your board: \n\n");
-	printf("X  1 2 3 4 5 6 7 8 9 10\n");
+	printf("X  0 1 2 3 4 5 6 7 8 9 \n");
 	for (ypos = 0; ypos < GS_BATTLESHIP_BOARD_HEIGHT; ++ypos)
 	{
-		printf(yPositions[ypos]);
+		printf("%c",yPositions[ypos]);
 		printf("  ");
 		for (xpos = 0; xpos < GS_BATTLESHIP_BOARD_WIDTH; ++xpos)
 		{
-			printf(states[game[player][xpos][ypos]]);
+			printf("%c",bsStates[game[player][xpos][ypos]]);
 			printf(" ");
 		}
 		printf("\n");
@@ -110,20 +120,20 @@ inline void gs_battleship_print_opponent(gs_battleship game, int nPlayer) //prin
 {
 	gs_battleship_index player, xpos, ypos, total;
 	player = nPlayer;
-	printf("X  1 2 3 4 5 6 7 8 9 10\n");
+	printf("X  0 1 2 3 4 5 6 7 8 9\n");
 	for (ypos = 0; ypos < GS_BATTLESHIP_BOARD_HEIGHT; ++ypos)
 	{
-		printf(yPositions[ypos]);
+		printf("%c",yPositions[ypos]);
 		printf("  ");
 		for (xpos = 0; xpos < GS_BATTLESHIP_BOARD_WIDTH; ++xpos)
 		{
 			if (game[player][xpos][ypos] > 2)
 			{
-				printf(states[gs_battleship_space_open]);
+				printf("%c",bsStates[gs_battleship_space_open]);
 			}
 			else
 			{
-				printf(states[game[player][xpos][ypos]]);
+				printf("%c",bsStates[game[player][xpos][ypos]]);
 			}
 			printf(" ");
 		}
@@ -167,39 +177,41 @@ inline void gs_battleship_fire(gs_battleship game, char row, int column, int pla
 	if (game[player][column][rowInt] > 2)
 	{
 		printf("\n Hit at: ");
-		printf(row);
-		printf(column);
+		printf("%c",row);
+		printf("%d",column);
 		gs_checkers_setSpaceState(game, gs_battleship_space_hit, player, column, rowInt);
 		printf("\n");
 	}
 	else
 	{
 		printf("\n Miss at: ");
-		printf(row);
-		printf(column);
+		printf("%c", row);
+		printf("%d", column);
 		gs_checkers_setSpaceState(game, gs_battleship_space_miss, player, column, rowInt);
 		printf("\n");
 	}
 }
 
-inline void playRound(gs_battleship game, int nPlayer)
+inline void bsPlayRound(gs_battleship game, int nPlayer)
 {
-	gs_battleship_index player, xpos, ypos, total;
+	gs_battleship_index player, xpos = 0, ypos = 'A', total;
 	player = nPlayer;
+	char debug;
 	gs_battleship_print_player(game, player);
 	system("pause");
 	gs_battleship_print_opponent(game, ((player + 1) % 2));
 	system("pause");
-	printf("\n Fire at which row?");
-	char row;
-	scanf("%c", row);
-	printf("\n Fire at which column?");
-	int column;
-	scanf("%d", column);
-	gs_battleship_fire(game, row, column, ((player + 1) % 2));
+	printf("Fire at which row?");
+	scanf("%c", &debug);
+	scanf("%c", &ypos);
+	printf("Fire at which column?");
+	int column = 0;
+	scanf("%d", &column);
+	xpos += column;
+	gs_battleship_fire(game, ypos, xpos, ((player + 1) % 2));
 }
 
-inline void playRoundAI(gs_battleship game, int nPlayer)
+inline void bsPlayRoundAI(gs_battleship game, int nPlayer)
 {
 	gs_battleship_index player, xpos, ypos, total;
 	player = nPlayer;
@@ -246,260 +258,292 @@ inline int verifyPlacement(gs_battleship game, int nPlayer, char nRow, int colum
 
 inline void placeCarrier(gs_battleship game, int nPlayer)
 {
+	gs_battleship_index player, xpos = 0, ypos = 'A', total;
 	int length = 5;
-	char row;
-	int column;
-	char direction;
-	int verify;
+	int inputx = 0;
+	char direction = 'D';
+	char debug;
+	int verify = 0;
 	gs_battleship_print_player(game, nPlayer);
 	system("pause");
-	printf("\n Start your Carrier at which row?");
-	scanf("%c", row);
-	printf("\n Start your Carrier on which column?");
-	scanf("%d", column);
-	printf("\n Point your Carrier in which direction? U/D/L/R");
-	scanf("%c", direction);
-	verify = verifyPlacement(game, nPlayer, row, column, direction, length);
-	while (verify = 0)
+	printf("Start your Carrier at which row? ");
+	scanf("%c", &ypos);
+	printf("Start your Carrier on which column? ");
+	scanf("%d", &inputx);
+	scanf("%c", &debug);
+	printf("Point your Carrier in which direction? U/D/L/R ");
+	scanf("%c", &direction);
+	xpos += inputx;
+	verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
+	while (verify == 0)
 	{
-		printf("Invalid placement, please try again");
+		printf("Invalid placement, please try again\n");
 		system("pause");
 		gs_battleship_print_player(game, nPlayer);
 		system("pause");
-		printf("\n Start your Carrier at which row?");
-		scanf("%c", row);
-		printf("\n Start your Carrier on which column?");
-		scanf("%d", column);
-		printf("\n Point your Carrier in which direction? U/D/L/R");
-		scanf("%c", direction);
-		verify = verifyPlacement(game, nPlayer, row, column, direction, length);
+		printf("Start your Carrier at which row? ");
+		scanf("%c", &ypos);
+		printf("Start your Carrier on which column?");
+		scanf("%d", &xpos);
+		scanf("%c", &debug);
+		printf("Point your Carrier in which direction? U/D/L/R ");
+		scanf("%c", &direction);
+		xpos += inputx;
+		verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
 	}
 	int parse[2] = { 0, 0 };
 	int parseTotal = 0;
 	while (parseTotal < length)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_carrier5, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_carrier5, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		switch (direction)
 		{
 		case 'U':
-			parse[0]--;
-			break;
-		case 'D':
-			parse[0]++;
-			break;
-		case 'L':
 			parse[1]--;
 			break;
-		default:
+		case 'D':
 			parse[1]++;
+			break;
+		case 'L':
+			parse[0]--;
+			break;
+		default:
+			parse[0]++;
 		}
 		parseTotal++;
 	}
 }
 inline void placeBattleship(gs_battleship game, int nPlayer)
 {
+	gs_battleship_index player, xpos = 0, ypos = 'A', total;
 	int length = 4;
-	char row;
-	int column;
-	char direction;
-	int verify;
+	int inputx = 0;
+	char debug;
+	char direction = 'D';
+	int verify = 0;
 	gs_battleship_print_player(game, nPlayer);
 	system("pause");
-	printf("\n Start your Battleship at which row?");
-	scanf("%c", row);
-	printf("\n Start your Battleship on which column?");
-	scanf("%d", column);
-	printf("\n Point your Battleship in which direction? U/D/L/R");
-	scanf("%c", direction);
-	verify = verifyPlacement(game, nPlayer, row, column, direction, length);
-	while (verify = 0)
+	scanf("%c", &debug);
+	printf("Start your Battleship at which row?");
+	scanf("%c", &ypos);
+	printf("Start your Battleship on which column?");
+	scanf("%d", &inputx);
+	scanf("%c", &debug);
+	printf("Point your Battleship in which direction? U/D/L/R");
+	scanf("%c", &direction);
+	xpos += inputx;
+	verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
+	while (verify == 0)
 	{
 		printf("Invalid placement, please try again");
 		system("pause");
+		scanf("%c", &debug);
 		gs_battleship_print_player(game, nPlayer);
 		system("pause");
-		printf("\n Start your Battleship at which row?");
-		scanf("%c", row);
-		printf("\n Start your Battleship on which column?");
-		scanf("%d", column);
-		printf("\n Point your Battleship in which direction? U/D/L/R");
-		scanf("%c", direction);
-		verify = verifyPlacement(game, nPlayer, row, column, direction, length);
+		printf("Start your Battleship at which row?");
+		scanf("%c", &ypos);
+		printf("Start your Battleship on which column?");
+		scanf("%d", &inputx);
+		printf("Point your Battleship in which direction? U/D/L/R");
+		scanf("%c", &direction);
+		xpos += inputx;
+		verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
 	}
 	int parse[2] = { 0, 0 };
 	int parseTotal = 0;
 	while (parseTotal < length)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_battleship4, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_battleship4, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		switch (direction)
 		{
 		case 'U':
-			parse[0]--;
-			break;
-		case 'D':
-			parse[0]++;
-			break;
-		case 'L':
 			parse[1]--;
 			break;
-		default:
+		case 'D':
 			parse[1]++;
+			break;
+		case 'L':
+			parse[0]--;
+			break;
+		default:
+			parse[0]++;
 		}
 		parseTotal++;
 	}
 }
 inline void placeDestroyer(gs_battleship game, int nPlayer)
 {
+	gs_battleship_index player, xpos = 0, ypos = 'A', total;
 	int length = 3;
-	char row;
-	int column;
-	char direction;
-	int verify;
+	int inputx = 0;
+	char direction = 'D';
+	char debug;
+	int verify = 0;
 	gs_battleship_print_player(game, nPlayer);
 	system("pause");
-	printf("\n Start your Destroyer at which row?");
-	scanf("%c", row);
-	printf("\n Start your Destroyer on which column?");
-	scanf("%d", column);
-	printf("\n Point your Destroyer in which direction? U/D/L/R");
-	scanf("%c", direction);
-	verify = verifyPlacement(game, nPlayer, row, column, direction, length);
-	while (verify = 0)
+	scanf("%c", &debug);
+	printf("Start your Destroyer at which row?");
+	scanf("%c", &ypos);
+	printf("Start your Destroyer on which column?");
+	scanf("%d", &inputx);
+	scanf("%c", &debug);
+	printf("Point your Destroyer in which direction? U/D/L/R");
+	scanf("%c", &direction);
+	xpos += inputx;
+	verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
+	while (verify == 0)
 	{
 		printf("Invalid placement, please try again");
 		system("pause");
+		scanf("%c", &debug);
 		gs_battleship_print_player(game, nPlayer);
 		system("pause");
-		printf("\n Start your Destroyer at which row?");
-		scanf("%c", row);
-		printf("\n Start your Destroyer on which column?");
-		scanf("%d", column);
-		printf("\n Point your Destroyer in which direction? U/D/L/R");
-		scanf("%c", direction);
-		verify = verifyPlacement(game, nPlayer, row, column, direction, length);
+		printf("Start your Destroyer at which row?");
+		scanf("%c", &ypos);
+		printf("Start your Destroyer on which column?");
+		scanf("%d", &inputx);
+		scanf("%c", &debug);
+		printf("Point your Destroyer in which direction? U/D/L/R");
+		scanf("%c", &direction);
+		xpos += inputx;
+		verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
 	}
 	int parse[2] = { 0, 0 };
 	int parseTotal = 0;
 	while (parseTotal < length)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_destroyer3, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_destroyer3, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		switch (direction)
 		{
 		case 'U':
-			parse[0]--;
-			break;
-		case 'D':
-			parse[0]++;
-			break;
-		case 'L':
 			parse[1]--;
 			break;
-		default:
+		case 'D':
 			parse[1]++;
+			break;
+		case 'L':
+			parse[0]--;
+			break;
+		default:
+			parse[0]++;
 		}
 		parseTotal++;
 	}
 }
 inline void placeSubmarine(gs_battleship game, int nPlayer)
 {
+	gs_battleship_index player, xpos = 0, ypos = 'A', total;
 	int length = 3;
-	char row;
-	int column;
-	char direction;
-	int verify;
+	int inputx = 0;
+	char direction = 'D';
+	char debug;
+	int verify = 0;
 	gs_battleship_print_player(game, nPlayer);
 	system("pause");
-	printf("\n Start your Submarine at which row?");
-	scanf("%c", row);
-	printf("\n Start your Submarine on which column?");
-	scanf("%d", column);
-	printf("\n Point your Submarine in which direction? U/D/L/R");
-	scanf("%c", direction);
-	verify = verifyPlacement(game, nPlayer, row, column, direction, length);
-	while (verify = 0)
+	scanf("%c", &debug);
+	printf("Start your Submarine at which row? ");
+	scanf("%c", &ypos);
+	printf("Start your Submarine on which column? ");
+	scanf("%d", &inputx);
+	scanf("%c", &debug);
+	printf("Point your Submarine in which direction? U/D/L/R");
+	scanf("%c", &direction);
+	xpos += inputx;
+	verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
+	while (verify == 0)
 	{
 		printf("Invalid placement, please try again");
 		system("pause");
 		gs_battleship_print_player(game, nPlayer);
 		system("pause");
-		printf("\n Start your Submarine at which row?");
-		scanf("%c", row);
-		printf("\n Start your Submarine on which column?");
-		scanf("%d", column);
-		printf("\n Point your Submarine in which direction? U/D/L/R");
-		scanf("%c", direction);
-		verify = verifyPlacement(game, nPlayer, row, column, direction, length);
+		scanf("%c", &debug);
+		printf("Start your Submarine at which row? ");
+		scanf("%c", &ypos);
+		printf("Start your Submarine on which column? ");
+		scanf("%d", &inputx);
+		scanf("%c", &debug);
+		printf("Point your Submarine in which direction? U/D/L/R ");
+		scanf("%c", &direction);
+		xpos += inputx;
+		verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
 	}
 	int parse[2] = { 0, 0 };
 	int parseTotal = 0;
 	while (parseTotal < length)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_submarine3, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_submarine3, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		switch (direction)
 		{
 		case 'U':
-			parse[0]--;
-			break;
-		case 'D':
-			parse[0]++;
-			break;
-		case 'L':
 			parse[1]--;
 			break;
-		default:
+		case 'D':
 			parse[1]++;
+			break;
+		case 'L':
+			parse[0]--;
+			break;
+		default:
+			parse[0]++;
 		}
 		parseTotal++;
 	}
 }
 inline void placePatrolBoat(gs_battleship game, int nPlayer)
 {
+	gs_battleship_index player, xpos = 0, ypos = 'A', total;
 	int length = 2;
-	char row;
-	int column;
-	char direction;
-	int verify;
+	int inputx = 0;
+	char direction = 'D';
+	char debug;
+	int verify = 0;
 	gs_battleship_print_player(game, nPlayer);
 	system("pause");
-	printf("\n Start your Patrol Boat at which row?");
-	scanf("%c", row);
-	printf("\n Start your Patrol Boat on which column?");
-	scanf("%d", column);
-	printf("\n Point your Patrol Boat in which direction? U/D/L/R");
-	scanf("%c", direction);
-	verify = verifyPlacement(game, nPlayer, row, column, direction, length);
-	while (verify = 0)
+	scanf("%c", &debug);
+	printf("Start your Patrol Boat at which row? ");
+	scanf("%c", &ypos);
+	printf("Start your Patrol Boat on which column? ");
+	scanf("%d", &inputx);
+	scanf("%c", &debug);
+	printf("Point your Patrol Boat in which direction? U/D/L/R");
+	scanf("%c", &direction);
+	xpos += inputx;
+	verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
+	while (verify == 0)
 	{
 		printf("Invalid placement, please try again");
 		system("pause");
+		scanf("%c", &debug);
 		gs_battleship_print_player(game, nPlayer);
 		system("pause");
-		printf("\n Start your Patrol Boat at which row?");
-		scanf("%c", row);
-		printf("\n Start your Patrol Boat on which column?");
-		scanf("%d", column);
-		printf("\n Point your Patrol Boat in which direction? U/D/L/R");
-		scanf("%c", direction);
-		verify = verifyPlacement(game, nPlayer, row, column, direction, length);
+		printf("Start your Patrol Boat at which row? ");
+		scanf("%c", &ypos);
+		printf("Start your Patrol Boat on which column? ");
+		scanf("%d", &inputx);
+		scanf("%c", &debug);
+		printf("Point your Patrol Boat in which direction? U/D/L/R ");
+		scanf("%c", &direction);
+		xpos += inputx;
+		verify = verifyPlacement(game, nPlayer, ypos, xpos, direction, length);
 	}
 	int parse[2] = { 0, 0 };
 	int parseTotal = 0;
 	while (parseTotal < length)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_patrol2, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_patrol2, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		switch (direction)
 		{
 		case 'U':
-			parse[0]--;
-			break;
-		case 'D':
-			parse[0]++;
-			break;
-		case 'L':
 			parse[1]--;
 			break;
-		default:
+		case 'D':
 			parse[1]++;
+			break;
+		case 'L':
+			parse[0]--;
+			break;
+		default:
+			parse[0]++;
 		}
 		parseTotal++;
 	}
@@ -519,53 +563,52 @@ inline void buildBoard(gs_battleship game, int nPlayer)
 
 inline void buildBoardAI(gs_battleship game, int nPlayer)
 {
+	gs_battleship_index player, xpos = 6, ypos = 'H', total;
 	int parse[2] = { 0, 0 };
 	int parseTotal = 0;
-	int column = 6;
-	char row = 'H';
 	while (parseTotal < 5)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_carrier5, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_carrier5, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		parse[1]++;
 		parseTotal++;
 	}
 	parse[1] = 0;
 	parseTotal = 0;
-	column = 6;
-	row = 'B';
+	xpos = 6;
+	ypos = 'B';
 	while (parseTotal < 4)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_battleship4, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_battleship4, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		parse[1]++;
 		parseTotal++;
 	}
 	parse[1] = 0;
 	parseTotal = 0;
-	column = 7;
-	row = 'E';
+	xpos = 7;
+	ypos = 'E';
 	while (parseTotal < 3)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_destroyer3, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_destroyer3, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		parse[1]++;
 		parseTotal++;
 	}
 	parse[1] = 0;
 	parseTotal = 0;
-	column = 3;
-	row = 'G';
+	xpos = 3;
+	ypos = 'G';
 	while (parseTotal < 3)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_submarine3, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_submarine3, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		parse[0]++;
 		parseTotal++;
 	}
 	parse[0] = 0;
 	parseTotal = 0;
-	column = 3;
-	row = 'B';
+	xpos = 3;
+	ypos = 'B';
 	while (parseTotal < 2)
 	{
-		gs_checkers_setSpaceState(game, gs_battleship_space_patrol2, nPlayer, column + parse[0], row_to_int(row) + parse[1]);
+		gs_checkers_setSpaceState(game, gs_battleship_space_patrol2, nPlayer, xpos + parse[0], row_to_int(ypos) + parse[1]);
 		parse[0]++;
 		parseTotal++;
 	}
@@ -580,19 +623,21 @@ inline void buildBoardAI(gs_battleship game, int nPlayer)
 
 int launchBattleship()
 {
+	//int testing = 0;
 	gs_battleship game = { 0 };
 	gs_battleship_reset(game);
+	//printf("%d",testing);
 	buildBoard(game, 0);
 	buildBoardAI(game, 1);
 	int winner = 0;
-	while (winner = 0)
+	while (winner == 0)
 	{
-		playRound(game, 0);
-		playRoundAI(game, 1);
+		bsPlayRound(game, 0);
+		bsPlayRoundAI(game, 1);
 		winner = gs_battleship_win(game);
 	}
 	printf("Player ");
-	printf(winner);
+	printf("%d",winner);
 	printf(" Wins!\n");
 
 
