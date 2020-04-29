@@ -267,6 +267,7 @@ inline void placeCarrier(gs_battleship game, int nPlayer)
 	gs_battleship_print_player(game, nPlayer);
 	system("pause");
 	printf("Start your Carrier at which row? ");
+	scanf("%c", &debug);
 	scanf("%c", &ypos);
 	printf("Start your Carrier on which column? ");
 	scanf("%d", &inputx);
@@ -623,7 +624,8 @@ inline void buildBoardAI(gs_battleship game, int nPlayer)
 
 int launchBattleship()
 {
-	//int testing = 0;
+	//char testing = 'T';
+	//scanf("%c", testing);
 	gs_battleship game = { 0 };
 	gs_battleship_reset(game);
 	//printf("%d",testing);
